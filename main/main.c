@@ -5,10 +5,10 @@
 
 #define LCD_RS  GPIO_NUM_19
 #define LCD_EN  GPIO_NUM_18
-#define LCD_D4  GPIO_NUM_5
-#define LCD_D5  GPIO_NUM_13
+#define LCD_D4  GPIO_NUM_23
+#define LCD_D5  GPIO_NUM_21
 #define LCD_D6  GPIO_NUM_25
-#define LCD_D7  GPIO_NUM_4
+#define LCD_D7  GPIO_NUM_22
 
 static void lcd_pulse_enable(void){//falling edge
     gpio_set_level(LCD_EN,1);
@@ -36,6 +36,7 @@ static void lcd_command(uint8_t cmd){
 
 static void lcd_char(char c){
     lcd_send_byte(c, 1);
+    vTaskDelay(pdMS_TO_TICKS(5));
 }
 
 static void lcd_init(void){
@@ -50,24 +51,29 @@ static void lcd_init(void){
     };
     gpio_config(&io_conf);
 
-    vTaskDelay(pdMS_TO_TICKS(50));//LCD power on
+    vTaskDelay(pdMS_TO_TICKS(20));
 
     gpio_set_level(LCD_RS, 0);
     gpio_set_level(LCD_EN, 0);
 
+    vTaskDelay(pdMS_TO_TICKS(20));
     lcd_send_nibble(0x03);
-    vTaskDelay(pdMS_TO_TICKS(5));
+    vTaskDelay(pdMS_TO_TICKS(20));
     lcd_send_nibble(0x03);
-    vTaskDelay(pdMS_TO_TICKS(1));
+    vTaskDelay(pdMS_TO_TICKS(20));
     lcd_send_nibble(0x03);
-    vTaskDelay(pdMS_TO_TICKS(1));
+    vTaskDelay(pdMS_TO_TICKS(20));
     lcd_send_nibble(0x02);
+    vTaskDelay(pdMS_TO_TICKS(5));
 
     lcd_command(0x28);
+    vTaskDelay(pdMS_TO_TICKS(20));
     lcd_command(0x0C);
+    vTaskDelay(pdMS_TO_TICKS(20));
     lcd_command(0x06);
+    vTaskDelay(pdMS_TO_TICKS(20));
     lcd_command(0x01);
-    vTaskDelay(pdMS_TO_TICKS(2));
+    vTaskDelay(pdMS_TO_TICKS(20));
 }
 
 static void lcd_set_cursor(int col, int row){
@@ -81,14 +87,15 @@ static void lcd_print(const char *str){
     }
 }
 
-void app_main(void){
+void app_main(void) {
     lcd_init();
+    
     lcd_set_cursor(0, 0);
     lcd_print("Desk Monitor");
-    lcd_set_cursor(0, 0);
-    lcd_print("Initializing");
+    lcd_set_cursor(0, 1);
+    lcd_print("Initializing...");
 
-    while(1){
+    while(1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
