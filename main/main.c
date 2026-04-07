@@ -37,3 +37,58 @@ static void lcd_command(uint8_t cmd){
 static void lcd_char(char c){
     lcd_send_byte(c, 1);
 }
+
+static void lcd_init(void){
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << LCD_RS) | (1ULL << LCD_EN) |
+                        (1ULL << LCD_D4) | (1ULL << LCD_D5) |
+                        (1ULL << LCD_D6) | (1ULL << LCD_D7),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&io_conf);
+
+    vTaskDelay(pdMS_TO_TICKS(50));//LCD power on
+
+    gpio_set_level(LCD_RS, 0);
+    gpio_set_level(LCD_EN, 0);
+
+    lcd_send_nibble(0x03);
+    vTaskDelay(pdMS_TO_TICKS(5));
+    lcd_send_nibble(0x03);
+    vTaskDelay(pdMS_TO_TICKS(1));
+    lcd_send_nibble(0x03);
+    vTaskDelay(pdMS_TO_TICKS(1));
+    lcd_send_nibble(0x02);
+
+    lcd_command(0x28);
+    lcd_command(0x0C);
+    lcd_command(0x06);
+    lcd_command(0x01);
+    vTaskDelay(pdMS_TO_TICKS(2));
+}
+
+static void lcd_set_cursor(int col, int row){
+    uint8_t row_offsets[] = {0x00, 0x40};
+    lcd_command(0x80 | (col + row_offsets[row]));
+}
+
+static void lcd_print(const char *str){
+    while (*str){
+        lcd_char(*str++);
+    }
+}
+
+void app_main(void){
+    lcd_init();
+    lcd_set_cursor(0, 0);
+    lcd_print("Desk Monitor");
+    lcd_set_cursor(0, 0);
+    lcd_print("Initializing");
+
+    while(1){
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
