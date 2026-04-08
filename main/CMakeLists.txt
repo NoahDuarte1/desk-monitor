@@ -1,2 +1,2 @@
-idf_component_register(SRCS "main.c" "lcd.c" "dht11.c" "sound.c"
+idf_component_register(SRCS "main.c" "lcd.c" "dht11.c" "sound.c" "alerts.c"
                         INCLUDE_DIRS ".")

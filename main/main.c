@@ -5,6 +5,7 @@
 #include "lcd.h"
 #include "dht11.h"
 #include "sound.h"
+#include "alerts.h"
 
 #define DHT11_PIN 32
 
@@ -73,8 +74,17 @@ void audio_task(void *pvParameters){
         vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
+void alert_task(void *pvParameters){
+    env_data_t data;
+    while(1){
+        xQueuePeek(env_queue, &data, 0);
+        alerts_update(data.temperature, data.noise_level);
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}
 
 void app_main(void) {
+    alerts_init();
     lcd_init();
     
     env_queue = xQueueCreate(1, sizeof(env_data_t));
@@ -82,6 +92,7 @@ void app_main(void) {
     xTaskCreate(sensor_task, "sensor", 2048, NULL, 1, NULL);
     xTaskCreate(display_task, "display", 2048, NULL, 1, NULL);
     xTaskCreate(audio_task, "audio", 2048, NULL, 1, NULL);
+    xTaskCreate(alert_task, "alert", 2048, NULL, 1, NULL);
     
     while(1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
