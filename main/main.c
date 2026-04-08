@@ -4,6 +4,7 @@
 #include "freertos/queue.h"
 #include "lcd.h"
 #include "dht11.h"
+#include "sound.h"
 
 #define DHT11_PIN 32
 
@@ -47,6 +48,20 @@ void display_task(void *pvParameters){
     }
 }
 
+void audio_task(void *pvParameters){
+    env_data_t data;
+    while(1){
+        int noise = sound_read();
+        printf("noise: %d\n", noise);
+
+        if(xQueuePeek(env_queue, &data, 0) == pdTRUE){
+            data.noise_level = noise;
+            xQueueOverwrite(env_queue, &data);
+        }
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+}
+
 void app_main(void) {
     lcd_init();
     
@@ -54,6 +69,7 @@ void app_main(void) {
 
     xTaskCreate(sensor_task, "sensor", 2048, NULL, 1, NULL);
     xTaskCreate(display_task, "display", 2048, NULL, 1, NULL);
+    xTaskCreate(audio_task, "audio", 2048, NULL, 1, NULL);
     
     while(1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
