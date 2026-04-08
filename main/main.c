@@ -6,6 +6,7 @@
 #include "dht11.h"
 #include "sound.h"
 #include "alerts.h"
+#include "buttons.h"
 
 #define DHT11_PIN 32
 
@@ -38,6 +39,10 @@ void display_task(void *pvParameters){
     int screen = 0;
     char buf[16];
     while(1){
+        button_t btn = button_read();
+        if (btn == BUTTON_RIGHT) screen = 1;
+        else if (btn == BUTTON_LEFT) screen = 0;
+
         if (screen == 0){
             if(xQueuePeek(env_queue, &data, pdMS_TO_TICKS(100)) == pdTRUE){
                 lcd_set_cursor(0,0);
@@ -57,8 +62,7 @@ void display_task(void *pvParameters){
                 lcd_print("                ");
             }
         }
-        screen = !screen;
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -84,6 +88,7 @@ void alert_task(void *pvParameters){
 }
 
 void app_main(void) {
+    button_init();
     alerts_init();
     lcd_init();
     
