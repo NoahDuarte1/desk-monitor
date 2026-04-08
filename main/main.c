@@ -34,30 +34,42 @@ void sensor_task(void *pvParameters){
 
 void display_task(void *pvParameters){
     env_data_t data;
+    int screen = 0;
     char buf[16];
     while(1){
-        if(xQueuePeek(env_queue, &data, pdMS_TO_TICKS(100)) == pdTRUE){
-            lcd_set_cursor(0,0);
-            snprintf(buf, sizeof(buf), "Temp: %.1fC     ", data.temperature);
-            lcd_print(buf);
-            lcd_set_cursor(0, 1);
-            snprintf(buf, sizeof(buf), "Hum:  %.1f%%     ", data.humidity);
-            lcd_print(buf);
+        if (screen == 0){
+            if(xQueuePeek(env_queue, &data, pdMS_TO_TICKS(100)) == pdTRUE){
+                lcd_set_cursor(0,0);
+                snprintf(buf, sizeof(buf), "Temp: %.1fC     ", data.temperature);
+                lcd_print(buf);
+                lcd_set_cursor(0, 1);
+                snprintf(buf, sizeof(buf), "Hum:  %.1f%%     ", data.humidity);
+                lcd_print(buf);
+            }
         }
-        vTaskDelay(pdMS_TO_TICKS(500));
+        if (screen == 1){
+            if(xQueuePeek(env_queue, &data, pdMS_TO_TICKS(100)) == pdTRUE){
+                lcd_set_cursor(0,0);
+                snprintf(buf, sizeof(buf), "Noise:  %d    ", data.noise_level);
+                lcd_print(buf);
+                lcd_set_cursor(0, 1);
+                lcd_print("                ");
+            }
+        }
+        screen = !screen;
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
 
 void audio_task(void *pvParameters){
-    env_data_t data;
+    env_data_t data = {0, 0, 0};
     while(1){
         int noise = sound_read();
         printf("noise: %d\n", noise);
 
-        if(xQueuePeek(env_queue, &data, 0) == pdTRUE){
-            data.noise_level = noise;
-            xQueueOverwrite(env_queue, &data);
-        }
+        xQueuePeek(env_queue, &data, 0);
+        data.noise_level = noise;
+        xQueueOverwrite(env_queue, &data);
         vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
