@@ -10,7 +10,6 @@ void button_init(void) {
 
 button_t button_read(void) {
     int val = adc1_get_raw(BUTTON_CHANNEL);
-    printf("btn: %d\n", val);
 
     if (val < 100) return BUTTON_RIGHT;
     else if (val < 1500) return BUTTON_UP;

@@ -22,7 +22,6 @@ void sensor_task(void *pvParameters){
     env_data_t data;
     while(1){
         dht11_data_t reading = dht11_read(DHT11_PIN);
-        printf("temp: %.1f, hum: %.1f\n", reading.temperature, reading.humidity);
 
         if(reading.temperature > 0){
             data.temperature = reading.temperature;
@@ -70,7 +69,6 @@ void audio_task(void *pvParameters){
     env_data_t data = {0, 0, 0};
     while(1){
         int noise = sound_read();
-        printf("noise: %d\n", noise);
 
         xQueuePeek(env_queue, &data, 0);
         data.noise_level = noise;
