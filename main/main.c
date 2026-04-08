@@ -3,6 +3,9 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "lcd.h"
+#include "dht11.h"
+
+#define DHT11_PIN 32
 
 typedef struct{
     float temperature;
@@ -15,9 +18,15 @@ QueueHandle_t env_queue;
 void sensor_task(void *pvParameters){
     env_data_t data;
     while(1){
-        data.temperature = 22.5;
-        data.humidity = 55.0;
-        xQueueOverwrite(env_queue, &data);
+        dht11_data_t reading = dht11_read(DHT11_PIN);
+        printf("temp: %.1f, hum: %.1f\n", reading.temperature, reading.humidity);
+
+        if(reading.temperature > 0){
+            data.temperature = reading.temperature;
+            data.humidity = reading.humidity;
+            xQueueOverwrite(env_queue, &data);
+        }
+        
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
@@ -45,4 +54,8 @@ void app_main(void) {
 
     xTaskCreate(sensor_task, "sensor", 2048, NULL, 1, NULL);
     xTaskCreate(display_task, "display", 2048, NULL, 1, NULL);
+    
+    while(1) {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
