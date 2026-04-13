@@ -72,4 +72,5 @@ desk-monitor/
 └── CMakeLists.txt
 ```
 
-![Demo screenshot](assets/image0.jpeg)
+![LCD Demo](assets/image0.jpeg)
+![Wiring Image](assets/image1.jpeg)
