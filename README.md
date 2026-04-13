@@ -71,3 +71,5 @@ desk-monitor/
 │   └── buttons.c/h   -- Resistor ladder button reading
 └── CMakeLists.txt
 ```
+
+![Demo screenshot](assets/image0.jpeg)
